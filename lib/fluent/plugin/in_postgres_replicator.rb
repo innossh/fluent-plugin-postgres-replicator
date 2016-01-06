@@ -48,16 +48,16 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
 
   def poll
     hash_values = Hash.new
-    con = get_connection()
+    conn = get_connection()
     loop do
       rows_count = 0
       start_time = Time.now
-      rows, con = query(@query, con)
+      rows, conn = query(@query, conn)
       rows.each do |row|
         row_ids = Array.new
         @primary_keys.each do |primary_key|
           if row[primary_key].nil?
-            $log.error "primary_key value is not found. :tag=>#{tag} :primary_key=>#{primary_key}"
+            $log.error "primary_key value is not found. :tag=>#{@tag} :primary_key=>#{primary_key}"
             break
           end
           row_ids << row[primary_key]
@@ -75,18 +75,18 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
         hash_values[hash_value_id] = hash_value
         rows_count += 1
       end
-      con.close
+      conn.close
       elapsed_time = sprintf('%0.02f', Time.now - start_time)
-      $log.info "success to execute replicator. :tag=>#{tag} :rows_count=>#{rows_count} :elapsed_time=>#{elapsed_time} sec"
+      $log.info "success to execute replicator. :tag=>#{@tag} :rows_count=>#{rows_count} :elapsed_time=>#{elapsed_time} sec"
       sleep @interval
     end
 
   end
 
-  def query(query, con =nil)
+  def query(query, conn = nil)
     begin
-      con = (con.nil? || con.finished?) ? get_connection : con
-      return con.query(query), con
+      conn = (conn.nil? || conn.finished?) ? get_connection : conn
+      return conn.query(query), conn
     rescue Exception => e
       $log.warn "failed to execute query and will retry. error: #{e}"
       sleep @interval
