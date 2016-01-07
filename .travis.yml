@@ -1,4 +1,19 @@
 language: ruby
+
 rvm:
-  - 2.2.3
-before_install: gem install bundler -v 1.10.6
+  - 1.9.3
+  - 2.0.0
+  - 2.1
+  - 2.2
+
+addons:
+  postgresql: "9.4"
+
+services:
+  - postgresql
+
+before_script:
+  - psql -c 'create database pg_repli_test_db;' -U postgres
+  - psql -c 'create table pg_repli_test_table (id int8 primary key, total int8) ;' -U postgres
+  - psql -c 'insert into pg_repli_test_table values (1, 10) ;' -U postgres
+  - psql -c 'insert into pg_repli_test_table values (2, 20) ;' -U postgres
