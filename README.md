@@ -1,10 +1,16 @@
 # Fluent::Plugin::PostgresReplicator, a plugin for [Fluentd](http://www.fluentd.org)
 
+[![Gem Version](https://badge.fury.io/rb/fluent-plugin-postgres-replicator.svg)](https://badge.fury.io/rb/fluent-plugin-postgres-replicator)
+[![Build Status](https://travis-ci.org/innossh/fluent-plugin-postgres-replicator.svg?branch=master)](https://travis-ci.org/innossh/fluent-plugin-postgres-replicator)
+
 Fluentd input plugin to track insert/update event from PostgreSQL.
 
 ## Installation
 
 ```sh
+# requirements
+$ apt-get install libpq-dev
+
 $ gem install fluent-plugin-postgres-replicator
 ```
 
