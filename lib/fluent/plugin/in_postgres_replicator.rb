@@ -6,7 +6,7 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
   config_param :username, :string, :default => 'root'
   config_param :password, :string, :default => nil, :secret => true
   config_param :database, :string, :default => nil
-  config_param :query, :string, :default => nil
+  config_param :sql, :string, :default => nil
   config_param :primary_keys, :string, :default => nil
   config_param :interval, :string, :default => '10s'
   config_param :tag, :string, :default => nil
@@ -26,7 +26,7 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
     if @tag.nil?
       raise Fluent::ConfigError, "tag MUST be specified"
     end
-    @primary_keys = @primary_keys.split(',')
+    @primary_keys = @primary_keys.split(/\s*,\s*/)
   end
 
   def start
@@ -52,7 +52,7 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
     loop do
       rows_count = 0
       start_time = Time.now
-      rows, conn = query(@query, conn)
+      rows, conn = query(@sql, conn)
       rows.each do |row|
         row_ids = Array.new
         @primary_keys.each do |primary_key|
