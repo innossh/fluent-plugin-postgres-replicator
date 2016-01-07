@@ -41,8 +41,8 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
     begin
       poll
     rescue StandardError => e
-      $log.error "failed to execute query. error: #{e.message}"
-      $log.error e.backtrace.join("\n")
+      log.error "failed to execute query. error: #{e.message}"
+      log.error e.backtrace.join("\n")
     end
   end
 
@@ -56,11 +56,13 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
       rows.each do |row|
         row_ids = Array.new
         @primary_keys.each do |primary_key|
-          if row[primary_key].nil?
-            $log.error "primary_key value is not found. :tag=>#{@tag} :primary_key=>#{primary_key}"
-            break
+          if !row[primary_key].nil?
+            row_ids << row[primary_key]
           end
-          row_ids << row[primary_key]
+        end
+        if row_ids.size != @primary_keys.size
+          log.error "primary_keys column value is something wrong. :tag=>#{@tag} :primary_keys=>#{@primary_keys}"
+          break
         end
 
         hash_value_id = row_ids.join('_')
@@ -77,18 +79,18 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
       end
       conn.close
       elapsed_time = sprintf('%0.02f', Time.now - start_time)
-      $log.info "success to execute replicator. :tag=>#{@tag} :rows_count=>#{rows_count} :elapsed_time=>#{elapsed_time} sec"
+      log.info "success to execute replicator. :tag=>#{@tag} :rows_count=>#{rows_count} :elapsed_time=>#{elapsed_time} sec"
       sleep @interval
     end
 
   end
 
-  def query(query, conn = nil)
+  def query(sql, conn = nil)
     begin
       conn = (conn.nil? || conn.finished?) ? get_connection : conn
-      return conn.query(query), conn
+      return conn.query(sql), conn
     rescue Exception => e
-      $log.warn "failed to execute query and will retry. error: #{e}"
+      log.warn "failed to execute query and will retry. error: #{e}"
       sleep @interval
       retry
     end
@@ -97,7 +99,7 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
   def format_tag(tag, param)
     pattern = {'${event}' => param[:event].to_s, '${primary_keys}' => @primary_keys.join('_')}
     tag.gsub(/(\${[a-z_]+})/) do
-      $log.warn "placeholder value is not found. :tag=>#{tag} :placeholder=>#{$1}" unless pattern.include?($1)
+      log.warn "placeholder value is not found. :tag=>#{tag} :placeholder=>#{$1}" unless pattern.include?($1)
       pattern[$1]
     end
   end
@@ -116,7 +118,7 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
         :dbname => @database
       })
     rescue Exception => e
-      $log.warn "failed to get connection and will retry. error: #{e}"
+      log.warn "failed to get connection and will retry. error: #{e}"
       sleep @interval
       retry
     end
