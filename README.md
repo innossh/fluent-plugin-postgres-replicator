@@ -14,10 +14,7 @@ $ apt-get install libpq-dev
 $ gem install fluent-plugin-postgres-replicator
 ```
 
-## Usage
-
-In your Fluentd configuration, use `type postgres_replicator`.  
-Default values would look like this:
+## Configuration
 
 ```
 <source>
@@ -26,7 +23,7 @@ Default values would look like this:
   username pipeline
   password pipeline
   database pipeline
-  query SELECT hour, project, total_pages from wiki_stats;
+  sql SELECT hour, project, total_pages from wiki_stats;
   primary_keys hour,project
   interval 1m
   tag replicator.pipeline.wiki_stats.${event}.${primary_keys}
