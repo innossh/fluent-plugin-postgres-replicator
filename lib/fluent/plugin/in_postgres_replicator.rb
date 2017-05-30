@@ -7,9 +7,9 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
   config_param :password, :string, :default => nil, :secret => true
   config_param :database, :string, :default => nil
   config_param :sql, :string, :default => nil
-  config_param :primary_keys, :string, :default => nil
+  config_param :primary_keys, :string
   config_param :interval, :string, :default => '10s'
-  config_param :tag, :string, :default => nil
+  config_param :tag, :string
 
   def initialize
     super
@@ -20,12 +20,6 @@ class Fluent::PostgresReplicatorInput < Fluent::Input
   def configure(conf)
     super
     @interval = Fluent::Config.time_value(@interval)
-    if @primary_keys.nil?
-      raise Fluent::ConfigError, "primary_keys MUST be specified"
-    end
-    if @tag.nil?
-      raise Fluent::ConfigError, "tag MUST be specified"
-    end
     @primary_keys = @primary_keys.split(/\s*,\s*/)
   end
 
