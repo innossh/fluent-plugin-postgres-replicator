@@ -18,7 +18,7 @@ $ gem install fluent-plugin-postgres-replicator
 
 ```
 <source>
-  type postgres_replicator
+  @type postgres_replicator
   host localhost
   username pipeline
   password pipeline
