@@ -1,5 +1,5 @@
-require 'test/unit'
 require 'fluent/test'
+require 'fluent/test/driver/input'
 require 'fluent/plugin/in_postgres_replicator'
 
 class PostgresReplicatorTest < Test::Unit::TestCase
@@ -20,7 +20,7 @@ class PostgresReplicatorTest < Test::Unit::TestCase
   ]
 
   def create_driver(conf = CONFIG)
-    Fluent::Test::InputTestDriver.new(Fluent::PostgresReplicatorInput).configure(conf)
+    Fluent::Test::Driver::Input.new(Fluent::Plugin::PostgresReplicatorInput).configure(conf)
   end
 
   def test_configure
@@ -43,14 +43,12 @@ class PostgresReplicatorTest < Test::Unit::TestCase
   def test_emit
     d = create_driver
 
-    d.run do
-      sleep 2
-    end
+    d.run(expect_records: 2, timeout: 2)
 
-    emits = d.emits
-    assert_equal true, emits.length > 0
-    assert_equal ['pgreplicator.pg_repli_test_db.pg_repli_test_table.insert.id', @time, {'id' => '1', 'total' => '10'}], emits[0]
-    assert_equal ['pgreplicator.pg_repli_test_db.pg_repli_test_table.insert.id', @time, {'id' => '2', 'total' => '20'}], emits[1]
+    events = d.events
+    assert_equal true, events.length == 2
+    assert_equal ['pgreplicator.pg_repli_test_db.pg_repli_test_table.insert.id', @time, {'id' => '1', 'total' => '10'}], events[0]
+    assert_equal ['pgreplicator.pg_repli_test_db.pg_repli_test_table.insert.id', @time, {'id' => '2', 'total' => '20'}], events[1]
   end
 
 end
